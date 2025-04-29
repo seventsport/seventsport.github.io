@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña - Sevent Sport</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            border: none;
+            border-radius: 3px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FFD700;
+            color: #111;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e6c200;
+        }
+        #message {
+            margin-top: 10px;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Cambiar Contraseña</h2>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="currentPassword" placeholder="Contraseña actual" required>
+        <input type="password" id="newPassword" placeholder="Nueva contraseña" required>
+        <button onclick="changePassword()">Cambiar Contraseña</button>
+        <div id="message"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        // Configuración de Firebase (reemplaza con tus credenciales)
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_AUTH_DOMAIN",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Función para cambiar la contraseña
+        function changePassword() {
+            const email = document.getElementById('email').value;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const messageDiv = document.getElementById('message');
+
+            // Validar entradas
+            if (!email || !currentPassword || !newPassword) {
+                messageDiv.innerText = "Por favor, completa todos los campos.";
+                return;
+            }
+
+            // Iniciar sesión con las credenciales actuales
+            auth.signInWithEmailAndPassword(email, currentPassword)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    // Actualizar la contraseña en Firebase
+                    return user.updatePassword(newPassword);
+                })
+                .then(() => {
+                    messageDiv.innerText = "Contraseña cambiada exitosamente en Firebase. Actualizando base de datos local...";
+                    messageDiv.style.color = "#FFD700";
+
+                    // Enviar solicitud al backend local para actualizar MongoDB
+                    fetch('http://localhost:3000/update-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            newPassword: newPassword
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            messageDiv.innerText = "Contraseña actualizada exitosamente en la base de datos local.";
+                        } else {
+                            messageDiv.innerText = "Error al actualizar la base de datos local: " + data.message;
+                            messageDiv.style.color = "#FF4444";
+                        }
+                    })
+                    .catch(error => {
+                        messageDiv.innerText = "Error al conectar con el backend: " + error.message;
+                        messageDiv.style.color = "#FF4444";
+                    });
+
+                    // Limpiar el formulario
+                    document.getElementById('email').value = '';
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                })
+                .catch((error) => {
+                    messageDiv.innerText = "Error en Firebase: " + error.message;
+                    messageDiv.style.color = "#FF4444";
+                });
+        }
+    </script>
+</body>
+</html>

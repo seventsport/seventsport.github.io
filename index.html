@@ -56,27 +56,7 @@
         <div id="message"></div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
     <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfLtMQvnjV9IapTJhM4_ctJqNm-gytNpk",
-            authDomain: "sevent-sport-auth.firebaseapp.com",
-            projectId: "sevent-sport-auth",
-            storageBucket: "sevent-sport-auth.firebasestorage.app",
-            messagingSenderId: "191684760281",
-            appId: "1:191684760281:web:77727dda455a9e7cd2a4c8",
-            measurementId: "G-Y8SC9C8MKB"
-        };
-
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
         // Función para cambiar la contraseña
         function changePassword() {
             const email = document.getElementById('email').value;
@@ -90,51 +70,36 @@
                 return;
             }
 
-            // Iniciar sesión con las credenciales actuales
-            auth.signInWithEmailAndPassword(email, currentPassword)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    // Actualizar la contraseña en Firebase
-                    return user.updatePassword(newPassword);
+            // Enviar solicitud al backend local para validar y actualizar la contraseña
+            fetch('http://localhost:3000/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
                 })
-                .then(() => {
-                    messageDiv.innerText = "Contraseña cambiada exitosamente en Firebase. Actualizando base de datos local...";
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.innerText = "Contraseña actualizada exitosamente.";
                     messageDiv.style.color = "#FFD700";
-
-                    // Enviar solicitud al backend local para actualizar MongoDB
-                    fetch('http://localhost:3000/update-password', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email: email,
-                            newPassword: newPassword
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            messageDiv.innerText = "Contraseña actualizada exitosamente en la base de datos local.";
-                        } else {
-                            messageDiv.innerText = "Error al actualizar la base de datos local: " + data.message;
-                            messageDiv.style.color = "#FF4444";
-                        }
-                    })
-                    .catch(error => {
-                        messageDiv.innerText = "Error al conectar con el backend: " + error.message;
-                        messageDiv.style.color = "#FF4444";
-                    });
-
                     // Limpiar el formulario
                     document.getElementById('email').value = '';
                     document.getElementById('currentPassword').value = '';
                     document.getElementById('newPassword').value = '';
-                })
-                .catch((error) => {
-                    messageDiv.innerText = "Error en Firebase: " + error.message;
+                } else {
+                    messageDiv.innerText = "Error: " + data.message;
                     messageDiv.style.color = "#FF4444";
-                });
+                }
+            })
+            .catch(error => {
+                messageDiv.innerText = "Error al conectar con el backend: " + error.message;
+                messageDiv.style.color = "#FF4444";
+            });
         }
     </script>
 </body>

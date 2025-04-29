@@ -1,107 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Configuración de codificación de caracteres -->
     <meta charset="UTF-8">
-    <!Agregar imagen de icono de la página>
+    <!-- Agregar imagen de icono de la página -->
     <link rel="icon" href="/Sevent-Sport.ico" type="image/ico">
+    <!-- Descripción de la página -->
     <meta name="description" content="Cambiar contraseña de la cuenta de Sevent Sport.">
+    <!-- Configuración para diseño responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Título de la página -->
     <title>Cambiar Contraseña - Sevent Sport</title>
     <style>
+        /* Estilo general del cuerpo de la página */
         body {
             font-family: Arial, sans-serif;
-            background-color: #111;
-            color: #FFFFFF;
+            background-color: #111; /* Fondo oscuro */
+            color: #FFFFFF; /* Texto blanco */
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            justify-content: center; /* Centrar contenido horizontalmente */
+            align-items: center; /* Centrar contenido verticalmente */
+            height: 100vh; /* Altura completa de la ventana */
+            margin: 0; /* Sin márgenes */
         }
+        /* Estilo del contenedor principal */
         .container {
-            background-color: #222;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
+            background-color: #222; /* Fondo ligeramente más claro */
+            padding: 20px; /* Espaciado interno */
+            border-radius: 5px; /* Bordes redondeados */
+            text-align: center; /* Centrar texto */
         }
+        /* Estilo de los campos de entrada */
         input {
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
-            max-width: 300px;
-            border: none;
-            border-radius: 3px;
+            margin: 10px 0; /* Espaciado vertical */
+            padding: 10px; /* Espaciado interno */
+            width: 100%; /* Ancho completo */
+            max-width: 300px; /* Ancho máximo */
+            border: none; /* Sin bordes */
+            border-radius: 3px; /* Bordes redondeados */
         }
+        /* Estilo del botón */
         button {
-            padding: 10px 20px;
-            background-color: #FFD700;
-            color: #111;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
+            padding: 10px 20px; /* Espaciado interno */
+            background-color: #FFD700; /* Fondo dorado */
+            color: #111; /* Texto oscuro */
+            border: none; /* Sin bordes */
+            border-radius: 3px; /* Bordes redondeados */
+            cursor: pointer; /* Cambiar cursor al pasar sobre el botón */
         }
+        /* Estilo del botón al pasar el cursor */
         button:hover {
-            background-color: #e6c200;
+            background-color: #e6c200; /* Fondo más oscuro */
         }
+        /* Estilo del mensaje de estado */
         #message {
-            margin-top: 10px;
-            color: #FFD700;
+            margin-top: 10px; /* Espaciado superior */
+            color: #FFD700; /* Texto dorado */
         }
     </style>
 </head>
 <body>
+    <!-- Contenedor principal -->
     <div class="container">
+        <!-- Título de la página -->
         <h2>Cambiar Contraseña</h2>
+        <!-- Campo para ingresar el correo electrónico -->
         <input type="email" id="email" placeholder="Correo electrónico" required>
+        <!-- Campo para ingresar la contraseña actual -->
         <input type="password" id="currentPassword" placeholder="Contraseña actual" required>
+        <!-- Campo para ingresar la nueva contraseña -->
         <input type="password" id="newPassword" placeholder="Nueva contraseña" required>
+        <!-- Botón para ejecutar la función de cambio de contraseña -->
         <button onclick="changePassword()">Cambiar Contraseña</button>
+        <!-- Div para mostrar mensajes de estado -->
         <div id="message"></div>
     </div>
 
     <script>
         // Función para cambiar la contraseña
         function changePassword() {
+            // Obtener valores de los campos de entrada
             const email = document.getElementById('email').value;
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
-            const messageDiv = document.getElementById('message');
+            const messageDiv = document.getElementById('message'); // Div para mostrar mensajes
 
-            // Validar entradas
+            // Validar que todos los campos estén llenos
             if (!email || !currentPassword || !newPassword) {
-                messageDiv.innerText = "Por favor, completa todos los campos.";
-                return;
+                messageDiv.innerText = "Por favor, completa todos los campos."; // Mostrar mensaje de error
+                return; // Salir de la función
             }
 
-            // Enviar solicitud al backend local para validar y actualizar la contraseña
+            // Enviar solicitud al backend para cambiar la contraseña
             fetch('http://localhost:3000/change-password', {
-                method: 'POST',
+                method: 'POST', // Método HTTP
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', // Tipo de contenido
                 },
                 body: JSON.stringify({
-                    email: email,
-                    currentPassword: currentPassword,
-                    newPassword: newPassword
+                    email: email, // Correo electrónico
+                    currentPassword: currentPassword, // Contraseña actual
+                    newPassword: newPassword // Nueva contraseña
                 })
             })
-            .then(response => response.json())
+            .then(response => response.json()) // Convertir respuesta a JSON
             .then(data => {
+                // Verificar si la solicitud fue exitosa
                 if (data.success) {
-                    messageDiv.innerText = "Contraseña actualizada exitosamente.";
-                    messageDiv.style.color = "#FFD700";
-                    // Limpiar el formulario
+                    messageDiv.innerText = "Contraseña actualizada exitosamente."; // Mostrar mensaje de éxito
+                    messageDiv.style.color = "#FFD700"; // Cambiar color del mensaje
+                    // Limpiar los campos del formulario
                     document.getElementById('email').value = '';
                     document.getElementById('currentPassword').value = '';
                     document.getElementById('newPassword').value = '';
                 } else {
+                    // Mostrar mensaje de error del backend
                     messageDiv.innerText = "Error: " + data.message;
-                    messageDiv.style.color = "#FF4444";
+                    messageDiv.style.color = "#FF4444"; // Cambiar color del mensaje a rojo
                 }
             })
             .catch(error => {
+                // Manejar errores de conexión
                 messageDiv.innerText = "Error al conectar con el backend: " + error.message;
-                messageDiv.style.color = "#FF4444";
+                messageDiv.style.color = "#FF4444"; // Cambiar color del mensaje a rojo
             });
         }
     </script>

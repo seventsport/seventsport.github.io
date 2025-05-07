@@ -1,128 +1,212 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración de codificación de caracteres -->
     <meta charset="UTF-8">
-    <!-- Agregar imagen de icono de la página -->
     <link rel="icon" href="/Sevent-Sport.ico" type="image/ico">
-    <!-- Descripción de la página -->
     <meta name="description" content="Cambiar contraseña de la cuenta de Sevent Sport.">
-    <!-- Configuración para diseño responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Título de la página -->
     <title>Cambiar Contraseña - Sevent Sport</title>
     <style>
-        /* Estilo general del cuerpo de la página */
         body {
             font-family: Arial, sans-serif;
-            background-color: #111; /* Fondo oscuro */
-            color: #FFFFFF; /* Texto blanco */
+            background-color: #111;
+            color: #FFFFFF;
             display: flex;
-            justify-content: center; /* Centrar contenido horizontalmente */
-            align-items: center; /* Centrar contenido verticalmente */
-            height: 100vh; /* Altura completa de la ventana */
-            margin: 0; /* Sin márgenes */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-        /* Estilo del contenedor principal */
         .container {
-            background-color: #222; /* Fondo ligeramente más claro */
-            padding: 20px; /* Espaciado interno */
-            border-radius: 5px; /* Bordes redondeados */
-            text-align: center; /* Centrar texto */
+            background-color: #222;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
         }
-        /* Estilo de los campos de entrada */
         input {
-            margin: 10px 0; /* Espaciado vertical */
-            padding: 10px; /* Espaciado interno */
-            width: 100%; /* Ancho completo */
-            max-width: 300px; /* Ancho máximo */
-            border: none; /* Sin bordes */
-            border-radius: 3px; /* Bordes redondeados */
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            border: none;
+            border-radius: 3px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #FFD700;
         }
-        /* Estilo del botón */
+        .password-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .password-container input {
+            padding-right: 40px; /* Espacio para el botón de ojo */
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #FFD700;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+        }
+        .toggle-password:hover {
+            color: #e6c200;
+        }
         button {
-            padding: 10px 20px; /* Espaciado interno */
-            background-color: #FFD700; /* Fondo dorado */
-            color: #111; /* Texto oscuro */
-            border: none; /* Sin bordes */
-            border-radius: 3px; /* Bordes redondeados */
-            cursor: pointer; /* Cambiar cursor al pasar sobre el botón */
+            padding: 10px 20px;
+            background-color: #FFD700;
+            color: #111;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
         }
-        /* Estilo del botón al pasar el cursor */
         button:hover {
-            background-color: #e6c200; /* Fondo más oscuro */
+            background-color: #e6c200;
         }
-        /* Estilo del mensaje de estado */
         #message {
-            margin-top: 10px; /* Espaciado superior */
-            color: #FFD700; /* Texto dorado */
+            margin-top: 10px;
+            color: #FFD700;
+        }
+        #criteria {
+            font-size: 12px;
+            color: #FFD700;
+            text-align: left;
+            margin: 5px 0;
+            padding-left: 10px;
+        }
+        .valid {
+            color: #00FF00;
+        }
+        .invalid {
+            color: #FF4444;
         }
     </style>
 </head>
 <body>
-    <!-- Contenedor principal -->
     <div class="container">
-        <!-- Título de la página -->
         <h2>Cambiar Contraseña</h2>
-        <!-- Campo para ingresar el correo electrónico -->
         <input type="email" id="email" placeholder="Correo electrónico" required>
-        <!-- Campo para ingresar la contraseña actual -->
-        <input type="password" id="currentPassword" placeholder="Contraseña actual" required>
-        <!-- Campo para ingresar la nueva contraseña -->
-        <input type="password" id="newPassword" placeholder="Nueva contraseña" required>
-        <!-- Botón para ejecutar la función de cambio de contraseña -->
+        <div class="password-container">
+            <input type="password" id="currentPassword" placeholder="Contraseña actual" required>
+            <button type="button" class="toggle-password" onclick="togglePassword('currentPassword')">👁️</button>
+        </div>
+        <div class="password-container">
+            <input type="password" id="newPassword" placeholder="Nueva contraseña" required oninput="validatePassword()">
+            <button type="button" class="toggle-password" onclick="togglePassword('newPassword')">👁️</button>
+        </div>
+        <div id="criteria">
+            Ingresa una contraseña con los siguientes criterios:<br>
+            1. Mínimo 8 caracteres <span id="length" class="invalid">✖</span><br>
+            2. Mínimo una letra mayúscula <span id="uppercase" class="invalid">✖</span><br>
+            3. Mínimo un carácter especial <span id="special" class="invalid">✖</span><br>
+            4. Un número <span id="number" class="invalid">✖</span>
+        </div>
         <button onclick="changePassword()">Cambiar Contraseña</button>
-        <!-- Div para mostrar mensajes de estado -->
         <div id="message"></div>
     </div>
 
     <script>
+        // Función para mostrar/ocultar la contraseña
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleBtn = passwordField.nextElementSibling;
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                toggleBtn.textContent = "👁️‍🗨️"; // Ojo abierto
+            } else {
+                passwordField.type = "password";
+                toggleBtn.textContent = "👁️"; // Ojo cerrado
+            }
+        }
+
+        // Función para validar los criterios de la nueva contraseña
+        function validatePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const length = document.getElementById('length');
+            const uppercase = document.getElementById('uppercase');
+            const special = document.getElementById('special');
+            const number = document.getElementById('number');
+
+            // Validar cada criterio
+            const minLength = newPassword.length >= 8;
+            const hasUpperCase = /[A-Z]/.test(newPassword);
+            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(newPassword);
+            const hasNumber = /\d/.test(newPassword);
+
+            // Actualizar indicadores
+            length.className = minLength ? "valid" : "invalid";
+            length.textContent = minLength ? "✔" : "✖";
+            uppercase.className = hasUpperCase ? "valid" : "invalid";
+            uppercase.textContent = hasUpperCase ? "✔" : "✖";
+            special.className = hasSpecial ? "valid" : "invalid";
+            special.textContent = hasSpecial ? "✔" : "✖";
+            number.className = hasNumber ? "valid" : "invalid";
+            number.textContent = hasNumber ? "✔" : "✖";
+
+            // Validar antes de enviar al backend
+            if (!minLength || !hasUpperCase || !hasSpecial || !hasNumber) {
+                document.getElementById('message').innerText = "La nueva contraseña no cumple con los criterios.";
+                document.getElementById('message').style.color = "#FF4444";
+                return false;
+            }
+            return true;
+        }
+
         // Función para cambiar la contraseña
         function changePassword() {
-            // Obtener valores de los campos de entrada
             const email = document.getElementById('email').value;
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
-            const messageDiv = document.getElementById('message'); // Div para mostrar mensajes
+            const messageDiv = document.getElementById('message');
 
-            // Validar que todos los campos estén llenos
+            // Validar entradas
             if (!email || !currentPassword || !newPassword) {
-                messageDiv.innerText = "Por favor, completa todos los campos."; // Mostrar mensaje de error
-                return; // Salir de la función
+                messageDiv.innerText = "Por favor, completa todos los campos.";
+                messageDiv.style.color = "#FF4444";
+                return;
             }
 
-            // Enviar solicitud al backend para cambiar la contraseña
-            fetch('http://localhost:3000/change-password', {
-                method: 'POST', // Método HTTP
+            // Validar criterios de la nueva contraseña
+            if (!validatePassword()) {
+                return;
+            }
+
+            // Enviar solicitud al backend en Render
+            fetch('https://sevent-sport-backend.onrender.com/change-password', {
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Tipo de contenido
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email: email, // Correo electrónico
-                    currentPassword: currentPassword, // Contraseña actual
-                    newPassword: newPassword // Nueva contraseña
+                    email: email,
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
                 })
             })
-            .then(response => response.json()) // Convertir respuesta a JSON
+            .then(response => response.json())
             .then(data => {
-                // Verificar si la solicitud fue exitosa
                 if (data.success) {
-                    messageDiv.innerText = "Contraseña actualizada exitosamente."; // Mostrar mensaje de éxito
-                    messageDiv.style.color = "#FFD700"; // Cambiar color del mensaje
-                    // Limpiar los campos del formulario
+                    messageDiv.innerText = "Contraseña actualizada exitosamente.";
+                    messageDiv.style.color = "#FFD700";
+                    // Limpiar el formulario
                     document.getElementById('email').value = '';
                     document.getElementById('currentPassword').value = '';
                     document.getElementById('newPassword').value = '';
                 } else {
-                    // Mostrar mensaje de error del backend
                     messageDiv.innerText = "Error: " + data.message;
-                    messageDiv.style.color = "#FF4444"; // Cambiar color del mensaje a rojo
+                    messageDiv.style.color = "#FF4444";
                 }
             })
             .catch(error => {
-                // Manejar errores de conexión
                 messageDiv.innerText = "Error al conectar con el backend: " + error.message;
-                messageDiv.style.color = "#FF4444"; // Cambiar color del mensaje a rojo
+                messageDiv.style.color = "#FF4444";
             });
         }
     </script>
